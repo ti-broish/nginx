@@ -1,0 +1,44 @@
+#
+# CORS header support
+#
+# One way to use this is by placing it into a file called "cors_support"
+# under your Nginx configuration directory and placing the following
+# statement inside your **location** block(s):
+#
+#   include cors_support;
+#
+# As of Nginx 1.7.5, add_header supports an "always" parameter which
+# allows CORS to work if the backend returns 4xx or 5xx status code.
+#
+# For more information on CORS, please see: http://enable-cors.org/
+# Forked from this Gist: https://gist.github.com/michiel/1064640
+#
+if ( $request_method !~ ^(GET|POST|HEAD|OPTIONS|PUT|PATCH|DELETE)$ ) {
+    return 444;
+}
+
+set $origin $http_origin;
+
+if ($request_method ~ '(OPTIONS|GET|POST|PATCH|PUT|DELETE)') {
+    add_header 'Access-Control-Allow-Origin' "$origin" always;
+    add_header 'Access-Control-Allow-Methods' 'GET,POST,PATCH,PUT,DELETE,HEAD' always;
+    add_header 'Access-Control-Allow-Headers' 'Content-Type, Accept, Authorization' always;
+    add_header 'Access-Control-Allow-Credentials' 'true' always;
+}
+
+if ($request_method = 'OPTIONS') {
+    add_header 'Access-Control-Expose-Headers' 'Date' always;
+
+    # Some modern browsers now cap the CORS cache at 2 hours:
+    add_header Access-Control-Max-Age 7200;
+    add_header Content-Type 'text/plain charset=UTF-8';
+    add_header Content-Length 0;
+    return 204;
+}
+
+if ($request_method ~ '(GET|POST|PATCH|PUT|DELETE)') {
+    add_header Access-Control-Allow-Origin "$origin" always;
+    add_header Access-Control-Allow-Methods 'GET,POST,PATCH,PUT,DELETE,HEAD' always;
+    add_header Access-Control-Allow-Headers 'Content-Type, Accept, Authorization' always;
+    add_header Access-Control-Allow-Credentials true always;
+}
